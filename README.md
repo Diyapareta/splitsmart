@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <h1 align="center">SplitSmart</h1>
 
 <p align="center">
@@ -148,3 +149,7 @@ This project is part of my journey in learning full-stack development with the M
 - Mobile responsive UI
 - Performance optimization
 - Advanced analytics
+=======
+# splitsmart
+SplitSmart – Smart Expense Splitting Application
+>>>>>>> 8ab02e3a23beeffc52ffd8184c447704457a80ec
