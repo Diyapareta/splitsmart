@@ -5,9 +5,9 @@ export default function MembersSection({
   handleAddMember,
 }) {
   return (
-    <div className="bg-white/80 p-8 rounded-3xl shadow-xl mb-12">
+    <div className="bg-[#15151a] border border-gray-800 p-4 rounded-2xl mb-8">
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">Members</h2>
+        <h2 className="text-2xl font-semibold text-white">Members</h2>
 
         <div className="flex gap-3">
           <input
@@ -15,27 +15,31 @@ export default function MembersSection({
             placeholder="Enter member email"
             value={memberEmail}
             onChange={(e) => setMemberEmail(e.target.value)}
-            className="border px-4 py-2 rounded-xl"
+            className="bg-[#0b0b0e] border border-gray-700 text-white placeholder-gray-500 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+
           <button
             onClick={handleAddMember}
-            className="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 transition"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
           >
             Add
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         {group.members?.map((member) => (
           <div
             key={member._id}
-            className="flex items-center gap-3 px-5 py-2 bg-indigo-100 text-indigo-700 rounded-full"
+            className="flex items-center gap-3 px-4 py-2 bg-[#0b0b0e] border border-gray-800 rounded-full hover:shadow-md transition"
           >
-            <div className="w-8 h-8 flex items-center justify-center bg-indigo-500 text-white rounded-full text-sm font-bold">
+            {/* Avatar */}
+            <div className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-full text-sm font-semibold">
               {member.name.charAt(0).toUpperCase()}
             </div>
-            <span>{member.name}</span>
+
+            {/* Name */}
+            <span className="text-gray-300 text-sm">{member.name}</span>
           </div>
         ))}
       </div>

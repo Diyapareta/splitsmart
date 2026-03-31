@@ -11,6 +11,7 @@ export default function GroupsPreview() {
       <div className="space-y-4">
         {groups.map((group, index) => (
           <div
+            onClick={() => navigate(`/groups/${group._id}`)}
             key={index}
             className="flex justify-between items-center border-b border-gray-800 pb-4 last:border-none"
           >

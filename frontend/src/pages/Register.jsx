@@ -20,36 +20,38 @@ export default function Register() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
+    if (user) navigate("/dashboard");
   }, [user, navigate]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // ✅ Email validation regex
+  const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
-      setError("All fields are required");
-      return;
+    const { name, email, password, confirmPassword } = form;
+
+    // 🔥 VALIDATIONS
+    if (!name || !email || !password || !confirmPassword) {
+      return setError("All fields are required");
     }
 
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
+    if (!isValidEmail(email)) {
+      return setError("Enter a valid email address");
     }
 
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
+    if (password.length < 5 || password.length > 12) {
+      return setError("Password must be 5 to 12 characters");
+    }
+
+    if (password !== confirmPassword) {
+      return setError("Passwords do not match");
     }
 
     try {
@@ -57,76 +59,79 @@ export default function Register() {
       setError("");
 
       await axios.post("http://localhost:5000/api/auth/register", {
-        name: form.name,
-        email: form.email,
-        password: form.password,
+        name,
+        email,
+        password,
       });
 
+      // ✅ Clear form
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // ✅ Redirect to login
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(
+        err.response?.data?.message || err.message || "Registration failed",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 flex items-center justify-center relative overflow-hidden px-4">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-30 -z-10"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-300 rounded-full blur-3xl opacity-30 -z-10"></div>
-
-      <div className="bg-white/70 backdrop-blur-2xl border border-white/40 p-10 rounded-3xl shadow-2xl w-full max-w-md transition-all duration-500">
-        {/* Title */}
-        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 flex items-center justify-center px-4">
+      <div className="bg-white/70 backdrop-blur-2xl border p-10 rounded-3xl shadow-2xl w-full max-w-md">
+        <h2 className="text-3xl font-bold text-center mb-2 text-indigo-600">
           Create Account
         </h2>
 
-        <p className="text-center text-gray-600 mb-8 text-sm">
+        <p className="text-center text-gray-600 mb-6 text-sm">
           Start splitting expenses the smart way
         </p>
 
         {/* Error */}
         {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-6 text-sm text-center animate-pulse">
+          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-4 text-sm text-center">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
+            autoFocus
             type="text"
             name="name"
             placeholder="Full Name"
             value={form.name}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition"
+            className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-400 outline-none"
           />
 
-          {/* Email */}
           <input
             type="email"
             name="email"
             placeholder="Email"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition"
+            className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-400 outline-none"
           />
 
-          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              placeholder="Password"
+              placeholder="Password (5–12 chars)"
               value={form.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition pr-12"
+              className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-400 outline-none pr-12"
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -134,34 +139,32 @@ export default function Register() {
               placeholder="Confirm Password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition pr-12"
+              className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-400 outline-none pr-12"
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-3 text-gray-500 hover:text-indigo-600 transition"
+              className="absolute right-4 top-3 text-gray-500 hover:text-indigo-600"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl text-white font-medium shadow-lg transition duration-300 ${
+            className={`w-full py-3 rounded-xl text-white font-medium transition ${
               loading
                 ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-green-500 to-emerald-500 hover:shadow-2xl hover:scale-105"
+                : "bg-green-500 hover:bg-green-600"
             }`}
           >
-            {loading ? "Creating Account..." : "Register"}
+            {loading ? "Creating..." : "Register"}
           </button>
         </form>
 
-        {/* Login Link */}
-        <p className="text-sm text-center mt-6 text-gray-600">
+        <p className="text-sm text-center mt-5 text-gray-600">
           Already have an account?{" "}
           <Link to="/" className="text-indigo-600 font-medium hover:underline">
             Login

@@ -2,18 +2,23 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-import GroupHeader from "../components/Group/GroupHeader";
-import MembersSection from "../components/Group/MembersSection";
-import AddExpenseForm from "../components/Group/AddExpenseForm";
-import BalanceSection from "../components/Group/BalanceSection";
-import SettlementSection from "../components/Group/SettlementSection";
+import GroupHeader from "../components/group/GroupHeader";
+import MembersSection from "../components/group/MembersSection";
+import BalanceSection from "../components/group/BalanceSection";
+import SettlementSection from "../components/group/SettlementSection";
 import ExpensesSection from "../components/group/ExpensesSection";
+import AddExpenseForm from "../components/group/AddExpenseForm";
 
 export default function GroupDetails() {
   const { groupId } = useParams();
 
   const [group, setGroup] = useState(null);
+
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [expenses, setExpenses] = useState([]);
+  const [splitType, setSplitType] = useState("equal");
+  const [customSplits, setCustomSplits] = useState({});
   const [balances, setBalances] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -51,7 +56,11 @@ export default function GroupDetails() {
   useEffect(() => {
     fetchGroupData();
   }, [groupId]);
-
+  useEffect(() => {
+    if (group) {
+      setSelectedParticipants(group.members.map((m) => m._id));
+    }
+  }, [group]);
   // =========================
   // Handle Input Change
   // =========================
@@ -69,15 +78,50 @@ export default function GroupDetails() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Minimal validation
+    if (!form.amount || Number(form.amount) <= 0) {
+      return alert("Enter valid amount");
+    }
+    if (selectedParticipants.length === 0) {
+      return alert("Select at least one participant");
+    }
+    if (splitType === "custom") {
+      const total = Object.values(customSplits).reduce(
+        (acc, val) => acc + Number(val || 0),
+        0,
+      );
+
+      if (total !== Number(form.amount)) {
+        return alert("Split must equal total amount");
+      }
+    }
     try {
+      let participants = selectedParticipants;
+
+      let splitsData = null;
+
+      if (splitType === "custom") {
+        splitsData = customSplits;
+      }
+      if (selectedParticipants.length === 0) {
+        return alert("Select at least one participant");
+      }
+
       await api.post("/expenses", {
         groupId,
-        description: form.description,
+        description: form.description || "No description",
         amount: Number(form.amount),
-        participants: group.members.map((m) => m._id),
+        participants,
+        splitType,
+        splitsData,
       });
 
-      setForm({ description: "", amount: "" });
+      // ✅ reset form (same structure as before)
+      setForm({
+        description: "",
+        amount: "",
+      });
+
       setShowForm(false);
 
       await fetchGroupData();
@@ -85,7 +129,6 @@ export default function GroupDetails() {
       console.log(error.response?.data?.message);
     }
   };
-
   // =========================
   // Delete Expense
   // =========================
@@ -142,16 +185,23 @@ export default function GroupDetails() {
   // UI
   // =========================
   return (
-    <div className="p-6 md:p-10">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 space-y-6">
+      {/* Header */}
+      <button
+        onClick={() => navigate("/groups")}
+        className="mb-4 text-sm text-purple-400 hover:text-purple-300 flex items-center gap-2"
+      >
+        ← Back to Groups
+      </button>
       <GroupHeader group={group} />
 
+      {/* Members */}
       <MembersSection
         group={group}
         memberEmail={memberEmail}
         setMemberEmail={setMemberEmail}
         handleAddMember={handleAddMember}
       />
-
       <AddExpenseForm
         showForm={showForm}
         setShowForm={setShowForm}
@@ -159,16 +209,72 @@ export default function GroupDetails() {
         handleChange={handleChange}
         handleSubmit={handleSubmit}
         expenses={expenses}
+        group={group}
+        splitType={splitType}
+        setSplitType={setSplitType}
+        customSplits={customSplits}
+        setCustomSplits={setCustomSplits}
+        selectedParticipants={selectedParticipants}
+        setSelectedParticipants={setSelectedParticipants}
       />
+      {/* Action Bar */}
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-gray-400">
+          Total Expenses:{" "}
+          <span className="text-white font-medium ml-1">
+            ₹{expenses.reduce((acc, e) => acc + e.amount, 0)}
+          </span>
+        </p>
+      </div>
 
-      <BalanceSection balances={balances} />
+      {/* Balance + Settlement (SIDE BY SIDE) */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <BalanceSection balances={balances} />
 
-      <SettlementSection
-        settlements={settlements}
-        handleSettle={handleSettle}
+        <SettlementSection
+          settlements={settlements}
+          handleSettle={handleSettle}
+        />
+      </div>
+
+      {/* Expenses */}
+      <ExpensesSection
+        expenses={expenses}
+        handleDelete={handleDelete}
+        onSelect={(expense) => setSelectedExpense(expense)}
       />
+      {selectedExpense && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#15151a] p-6 rounded-xl w-80">
+            <h2 className="text-lg font-semibold mb-2">
+              {selectedExpense.description}
+            </h2>
 
-      <ExpensesSection expenses={expenses} handleDelete={handleDelete} />
+            <p className="text-sm text-gray-400 mb-4">
+              Paid by {selectedExpense.paidBy.name}
+            </p>
+
+            <div className="space-y-2">
+              {selectedExpense.splits.map((split) => (
+                <div
+                  key={split.user._id}
+                  className="flex justify-between text-sm"
+                >
+                  <span>{split.user.name}</span>
+                  <span>₹{split.amount}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setSelectedExpense(null)}
+              className="mt-4 w-full bg-gray-700 py-2 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

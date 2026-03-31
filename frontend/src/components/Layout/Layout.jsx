@@ -3,9 +3,14 @@ import { Outlet } from "react-router-dom";
 
 export default function Layout() {
   return (
-    <div className="flex bg-[#0b0b0e] text-white min-h-screen">
-      <Sidebar />
-      <div className="flex-1 p-8">
+    <div className="bg-[#0b0b0e] text-white">
+      {/* SIDEBAR (FIXED) */}
+      <div className="fixed top-0 left-0 h-screen w-64 z-50 bg-[#0b0b0e] border-r border-white/10">
+        <Sidebar />
+      </div>
+
+      {/* MAIN CONTENT (SCROLLABLE) */}
+      <div className="ml-64 h-screen overflow-y-auto p-8">
         <Outlet />
       </div>
     </div>

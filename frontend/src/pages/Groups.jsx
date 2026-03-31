@@ -186,6 +186,11 @@ export default function Groups() {
                 >
                   Create Group
                 </button>
+                <button
+                  onClick={() => navigate(`/group/${groupId}/settlements`)}
+                >
+                  Go to Settlements
+                </button>
               </div>
             </form>
           </div>

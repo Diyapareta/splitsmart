@@ -204,6 +204,7 @@ export const addMember = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 export const deleteGroup = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id);
@@ -217,10 +218,16 @@ export const deleteGroup = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    // 🔥 DELETE ALL EXPENSES OF THIS GROUP
+    await Expense.deleteMany({ group: group._id });
+
+    // 🔥 THEN DELETE GROUP
     await group.deleteOne();
 
-    res.json({ message: "Group deleted successfully" });
+    res.json({ message: "Group and expenses deleted successfully" });
+
   } catch (error) {
+    console.log("DELETE GROUP ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };

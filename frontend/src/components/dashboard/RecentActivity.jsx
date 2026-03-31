@@ -1,45 +1,59 @@
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
+
 export default function RecentActivity() {
-  const activities = [
-    {
-      title: "Dinner at Italian Place",
-      subtitle: "Added by Sarah • Roommates",
-      amount: "$86.50",
-      time: "2 hours ago",
-      positive: false,
-    },
-    {
-      title: "Settlement completed",
-      subtitle: "Mike paid you • Trip to Paris",
-      amount: "+$45.00",
-      time: "5 hours ago",
-      positive: true,
-    },
-    {
-      title: "New member joined",
-      subtitle: "Alex joined • Office Lunch",
-      time: "Yesterday",
-    },
-    {
-      title: "Groceries",
-      subtitle: "Added by you • Roommates",
-      amount: "$124.30",
-      time: "Yesterday",
-      positive: false,
-    },
-  ];
+  const [activities, setActivities] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const res = await api.get("/dashboard/activity");
+        setActivities(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchActivity();
+  }, []);
 
   return (
     <div className="bg-[#15151a] rounded-2xl border border-gray-800 p-6">
       <h2 className="text-lg font-semibold mb-6">Recent Activity</h2>
 
       <div className="space-y-5">
-        {activities.map((item, index) => (
-          <ActivityItem key={index} {...item} />
-        ))}
+        {activities.map((item) => {
+          const title = item.title;
+
+          const subtitle =
+            item.type === "settlement" ? "Settlement" : "Expense added";
+
+          const amount = `₹${Number(item.amount).toFixed(2)}`;
+
+          const positive = item.type === "settlement";
+
+          const time = new Date(item.createdAt).toLocaleString();
+
+          return (
+            <ActivityItem
+              key={item._id}
+              title={title}
+              subtitle={`${item.group}`}
+              amount={amount}
+              time={time}
+              positive={positive}
+            />
+          );
+        })}
       </div>
 
       <div className="mt-6">
-        <button className="text-purple-400 hover:text-purple-300 text-sm">
+        <button
+          onClick={() => navigate("/activity")}
+          className="text-purple-400 hover:text-purple-300 text-sm"
+        >
           View all activity →
         </button>
       </div>

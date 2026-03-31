@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import bcrypt from"bcryptjs";
 import jwt from "jsonwebtoken";
+import Expense from "../models/Expense.js";
+import Group from "../models/Group.js";
 export const registerUser=async(req,res)=>{
   try {
     const{name,email,password}=req.body;
@@ -51,3 +53,30 @@ export const loginUser=async(req,res)=>{
     
   }
 }
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 🔥 Delete user
+    await User.findByIdAndDelete(userId);
+
+    // 🔥 Delete related expenses
+    await Expense.deleteMany({
+      $or: [
+        { paidBy: userId },
+        { "splits.user": userId },
+      ],
+    });
+
+    // 🔥 Remove user from groups
+    await Group.updateMany(
+      { members: userId },
+      { $pull: { members: userId } }
+    );
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
