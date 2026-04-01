@@ -15,7 +15,7 @@ const app = express();
 // 🔥 CORS
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://your-actual-app.vercel.app"
+  "https://splitsmart-three-psi.vercel.app"
 ];
 
 app.use(cors({
@@ -55,7 +55,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
   const PORT = process.env.PORT || 5000;
 
-  app.listen(PORT, () =>
+  app.listen(PORT,"0.0.0.0", () =>
     console.log(`Server running on port ${PORT}`)
   );
 })
