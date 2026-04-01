@@ -6,7 +6,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import SettlementPage from "./pages/SetttementPage.jsx";
 
 import GroupDetails from "./pages/GroupDetails.jsx";
-import Groups from "./pages/groups.jsx";
+import Groups from "./pages/Groups.jsx";
 import Layout from "./components/Layout/Layout.jsx";
 import BalanceSummary from "./components/dashboard/BalanceSummary.jsx";
 import ActivityPage from "./pages/ActivityPage.jsx";
