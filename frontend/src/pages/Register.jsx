@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
+import api from "../api/axios";
 
 export default function Register() {
   const { user } = useContext(AuthContext);
@@ -58,7 +58,7 @@ export default function Register() {
       setLoading(true);
       setError("");
 
-      await axios.post("http://localhost:5000/api/auth/register", {
+      await api.post("/auth/register", {
         name,
         email,
         password,
