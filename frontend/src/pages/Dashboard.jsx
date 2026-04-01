@@ -1,7 +1,6 @@
-import StatCard from "../components/Dashboard/StatCard";
+import StatCard from "../components/dashboard/StatCard";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import BalanceSummary from "../components/dashboard/BalanceSummary";
-import GroupsPreview from "../components/dashboard/GroupsPreview";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
