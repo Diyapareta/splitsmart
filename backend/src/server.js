@@ -12,12 +12,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
-// Middleware
 app.use(express.json());
 
 // Routes
@@ -31,26 +32,17 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// DB + Server
-
-
-
-mongoose.connect(process.env.MONGO_URI, {
-  family: 4 // 🔥 important fix for ETIMEOUT
-})
-.then(() => {
-  console.log("MongoDB Connected");
-// DB + Server
-
+// Server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// MongoDB
 mongoose
   .connect(process.env.MONGO_URI, {
-    family: 4
+    family: 4,
   })
   .then(() => {
     console.log("MongoDB Connected");
